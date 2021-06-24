@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.egao.common.system.mapper.CardMapper">
+
+    <select id="select" resultType="java.util.HashMap">
+        select cuc.*,u.customer_name from(
+            select uc.*,pc.billingAmount from(
+                select * from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                where 1 = 1
+                <if test="purchase_request_id!=null and purchase_request_id!=''">
+                    and c.purchase_request_id like '%${purchase_request_id}%'
+                </if>
+                <if test="card_number!=null and card_number!=''">
+                    and c.card_number like '%${card_number}%'
+                </if>
+                <if test="status!=null and status!=''">
+                    and c.status = #{status}
+                </if>
+                <if test="user_id!=null and user_id!=0 and user_id!=''">
+                    and uc.user_id = #{user_id}
+                </if>
+                <if test="user_id!=null and user_id==0 and user_id!=''">
+                    and uc.user_id is null
+                </if>
+            )uc LEFT JOIN
+            (
+                select pc.purchaseRequestID,sum(pc.billingAmount) billingAmount from vcc_payment_control pc
+                where pc.vcnStatus = '批准' and pc.transactionType != '进货退回'
+                GROUP BY pc.purchaseRequestID
+            )pc on pc.purchaseRequestID = uc.purchase_request_id
+
+
+        )cuc
+        LEFT JOIN sys_user u on u.user_id = cuc.user_id
+        ORDER BY cuc.status ASC,cuc.record_time DESC
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from(
+            select * from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+            where 1 = 1
+            <if test="purchase_request_id!=null and purchase_request_id!=''">
+                and c.purchase_request_id like '%${purchase_request_id}%'
+            </if>
+            <if test="card_number!=null and card_number!=''">
+                and c.card_number like '%${card_number}%'
+            </if>
+            <if test="status!=null and status!=''">
+                and c.status = #{status}
+            </if>
+            <if test="user_id!=null and user_id!=0 and user_id!=''">
+                and uc.user_id = #{user_id}
+            </if>
+            <if test="user_id!=null and user_id==0 and user_id!=''">
+                and uc.user_id is null
+            </if>
+        )pc
+    </select>
+
+    <select id="selectById" resultType="java.util.HashMap">
+        select c.*,uc.user_id from vcc_card c left join vcc_user_card uc on uc.card_id = c.id
+        where id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        <selectKey resultType="int" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        insert into vcc_card(purchase_request_id, card_number, number, status, init_amount, actual_amount, external_amount, pin, remark, warning_amount, auto_recharge_amount, end_time, create_time, external_create_time)
+        values(#{purchase_request_id}, #{card_number}, #{number}, #{status}, #{init_amount}, #{actual_amount}, #{external_amount}, #{pin}, #{remark}, #{warning_amount}, #{auto_recharge_amount}, #{end_time}, #{create_time}, #{external_create_time})
+    </insert>
+
+    <update id="update">
+        update vcc_card
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="purchase_request_id!=null and purchase_request_id!=''">
+                purchase_request_id = #{purchase_request_id},
+            </if>
+            <if test="card_number!=null and card_number!=''">
+                card_number = #{card_number},
+            </if>
+            <if test="number!=null and number!=''">
+                number = #{number},
+            </if>
+            <if test="status!=null and status!=''">
+                status = #{status},
+            </if>
+            <if test="init_amount!=null and init_amount!=''">
+                init_amount = #{init_amount},
+            </if>
+            <if test="actual_amount!=null and actual_amount!=''">
+                actual_amount = #{actual_amount},
+            </if>
+            <if test="external_amount!=null and external_amount!=''">
+                external_amount = #{external_amount},
+            </if>
+            <if test="pin!=null and pin!=''">
+                pin = #{pin},
+            </if>
+            <if test="remark!=null and remark!=''">
+                remark = #{remark},
+            </if>
+            <if test="warning_amount!=null and warning_amount!=''">
+                warning_amount = #{warning_amount},
+            </if>
+            <if test="auto_recharge_amount!=null and auto_recharge_amount!=''">
+                auto_recharge_amount = #{auto_recharge_amount},
+            </if>
+            <if test="end_time!=null and end_time!=''">
+                end_time = #{end_time},
+            </if>
+            <if test="create_time!=null and create_time!=''">
+                create_time = #{create_time},
+            </if>
+            <if test="external_create_time!=null and external_create_time!=''">
+                external_create_time = #{external_create_time},
+            </if>
+            <if test="logout_time!=null and logout_time!=''">
+                logout_time = #{logout_time}
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+
+    <update id="updateCardAmount">
+        update vcc_card
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="init_amount!=null and init_amount!=''">
+                init_amount = #{init_amount},
+            </if>
+            <if test="actual_amount!=null and actual_amount!=''">
+                actual_amount = #{actual_amount},
+            </if>
+            <if test="external_amount!=null and external_amount!=''">
+                external_amount = #{external_amount}
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+
+    <update id="updateStatus">
+        update vcc_card set status = #{status} where id = #{id}
+    </update>
+
+<!--
+    <update id="updateActualRemainingAmount">
+        update vcc_card set actual_remaining_amount = actual_remaining_amount + #{actual_remaining_amount}
+        where id = #{id}
+    </update>
+-->
+
+
+
+    <delete id="deleteById">
+        delete from vcc_card where id = #{id}
+    </delete>
+
+    <insert id="insertUserCard">
+        insert into vcc_user_card(user_id, card_id)
+        values(#{user_id}, #{card_id})
+    </insert>
+
+    <delete id="deleteUserCardByCardId">
+        delete from vcc_user_card where card_id = #{card_id}
+    </delete>
+
+    <select id="selectUserCardByCardId" resultType="java.util.HashMap">
+        select * from vcc_user_card where card_id = #{card_id}
+    </select>
+
+
+    <select id="selectCanAllotCard" resultType="java.util.HashMap">
+        select * from vcc_card c where c.id not in(select uc.card_id from vcc_user_card uc) and c.status = 1
+    </select>
+
+
+    <!--外部已分配总额度(外部)，外部已分配总额度(内部),已用额度-->
+    <select id="selectExternalAmount" resultType="java.util.HashMap">
+        select cupc.*,u.customer_name,u.customer_id from(
+                select cuc.*,pc.billing_amount from(
+                        select uc.user_id,c.purchase_request_id purchaseRequestID,sum(c.external_amount) external_amount,sum(c.actual_amount) actual_amount
+                        ,c.id,c.purchase_request_id,c.card_number,c.status,c.init_amount,c.pin,c.remark,c.warning_amount,c.auto_recharge_amount
+                        ,c.end_time,c.logout_time,c.create_time,c.external_create_time,c.number
+                        from vcc_card c
+                        LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                        where c.id = #{id}
+                        group by uc.user_id
+                )cuc LEFT JOIN
+                (
+                        select pc.purchaseRequestID,sum(pc.billingAmount) billing_amount from vcc_payment_control pc
+                        where pc.vcnStatus = '批准' and pc.transactionType = '授权' or pc.transactionType = '冲账' GROUP BY pc.purchaseRequestID
+                )pc on pc.purchaseRequestID = cuc.purchaseRequestID
+        )cupc LEFT JOIN sys_user u on u.user_id = cupc.user_id
+    </select>
+
+
+    <!--累计转账金额、对外卡额度-->
+    <select id="selectAllotRechargeAmount" resultType="java.util.HashMap">
+        select t.*,cuc.external_amount from(
+                select user_id,sum(transfer_amount) transfer_amount from vcc_transfer
+                where user_id = #{user_id}
+                GROUP BY user_id
+        )t LEFT JOIN
+        (
+                select uc.user_id,sum(c.external_amount) external_amount from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                where uc.user_id = #{user_id}
+                GROUP BY uc.user_id
+        )cuc on cuc.user_id = t.user_id
+
+    </select>
+
+
+
+    <update id="updateOpenCard">
+        update vcc_card set external_amount = #{external_amount},init_amount = #{init_amount},external_create_time = #{external_create_time}
+        where id = #{id}
+    </update>
+
+
+    <select id="selectCardDetail" resultType="java.util.HashMap">
+        select cucu.*,cucpc.billing_amount,cucpc.logout_billing_amount from (
+                select cuc.*,u.customer_name,u.customer_id from(
+                        select uc.*,pc.billingAmount from(
+                                select * from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                                where 1 = 1
+                                <if test="purchase_request_id!=null and purchase_request_id!=''">
+                                    and c.purchase_request_id like '%${purchase_request_id}%'
+                                </if>
+                                <if test="card_number!=null and card_number!=''">
+                                    and c.card_number like '%${card_number}%'
+                                </if>
+                                <if test="status!=null and status!=''">
+                                    and c.status = #{status}
+                                </if>
+                                <if test="user_id!=null and user_id!=0 and user_id!=''">
+                                    and uc.user_id = #{user_id}
+                                </if>
+
+                        )uc LEFT JOIN
+                        (
+                                select pc.purchaseRequestID,sum(pc.billingAmount) billingAmount from vcc_payment_control pc
+                                where pc.vcnStatus = '批准' and pc.transactionType != '进货退回'
+                                GROUP BY pc.purchaseRequestID
+                        )pc on pc.purchaseRequestID = uc.purchase_request_id
+
+
+                )cuc
+                LEFT JOIN sys_user u on u.user_id = cuc.user_id
+
+        )cucu left JOIN (
+
+                select
+                cuc.user_id,cuc.purchaseRequestID,sum(cuc.external_amount) external_amount,sum(cuc.actual_amount) actual_amount
+                ,sum(pc.billing_amount) billing_amount
+                ,sum(if(cuc.status=2,cuc.external_amount-pc.billing_amount,0)) logout_billing_amount
+                from(
+                                /*对外卡额度、实际卡额度*/
+                                select uc.user_id,c.purchase_request_id purchaseRequestID,c.status,sum(c.external_amount) external_amount,sum(c.actual_amount) actual_amount
+                                from vcc_card c
+                                LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                                where 1 = 1
+                                <if test="purchase_request_id!=null and purchase_request_id!=''">
+                                    and c.purchase_request_id like '%${purchase_request_id}%'
+                                </if>
+                                <if test="card_number!=null and card_number!=''">
+                                    and c.card_number like '%${card_number}%'
+                                </if>
+                                <if test="status!=null and status!=''">
+                                    and c.status = #{status}
+                                </if>
+                                group by uc.user_id,c.purchase_request_id
+
+                )cuc LEFT JOIN
+                (
+                                /*-- 实际消耗总金额*/
+                                select pc.purchaseRequestID,sum(pc.billingAmount) billing_amount from vcc_payment_control pc
+                                where pc.vcnStatus = '批准' and pc.transactionType = '授权' or pc.transactionType = '冲账' GROUP BY pc.purchaseRequestID
+                )pc on pc.purchaseRequestID = cuc.purchaseRequestID
+                group by cuc.purchaseRequestID
+
+        )cucpc on cucpc.purchaseRequestID = cucu.purchase_request_id
+        ORDER BY cucu.status ASC,cucu.record_time DESC
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectAutoRechargeCard" resultType="java.util.HashMap">
+        select * from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+        where warning_amount > 0 and uc.user_id is not null
+    </select>
+
+</mapper>

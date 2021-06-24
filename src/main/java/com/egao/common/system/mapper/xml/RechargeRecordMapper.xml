@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.egao.common.system.mapper.RechargeRecordMapper">
+
+    <select id="select" resultType="java.util.HashMap">
+        select ucurr.*,u.customer_id s_customer_id from(
+            select rr.*,ucu.customer_id
+            ,ucu.purchase_request_id,ucu.card_number
+            from vcc_recharge_record rr
+            INNER JOIN
+            (
+                select uc.*,u.customer_id from (
+                    select c.*,uc.user_id from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+
+                )uc LEFT JOIN sys_user u on u.user_id = uc.user_id
+                where 1 = 1
+                <if test="user_id!=null and user_id!=''">
+                    and u.user_id = #{user_id}
+                </if>
+                <if test="customer_id!=null and customer_id!=''">
+                    and u.customer_id = #{customer_id}
+                </if>
+            )ucu on ucu.id = rr.card_id
+            where 1 = 1
+            <if test="startTime!=null and endTime!=''">
+                and rr.create_time BETWEEN #{startTime} and #{endTime}
+            </if>
+        )ucurr LEFT JOIN sys_user u on u.user_id = ucurr.s_user_id
+        order by ucurr.create_time desc
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from(
+            select rr.*,ucu.customer_id from vcc_recharge_record rr
+        INNER JOIN
+            (
+            select uc.*,u.customer_id from (
+            select c.*,uc.user_id from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+
+            )uc LEFT JOIN sys_user u on u.user_id = uc.user_id
+            where 1 = 1
+            <if test="user_id!=null and user_id!=''">
+                and u.user_id = #{user_id}
+            </if>
+            <if test="customer_id!=null and customer_id!=''">
+                and u.customer_id = #{customer_id}
+            </if>
+            )ucu on ucu.id = rr.card_id
+            where 1 = 1
+            <if test="startTime!=null and endTime!=''">
+                and rr.create_time BETWEEN #{startTime} and #{endTime}
+            </if>
+        )rcuc
+    </select>
+
+
+    <select id="selectById" resultType="java.util.HashMap">
+        select * from vcc_recharge_record where id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        <selectKey resultType="int" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        insert into vcc_recharge_record(card_id, s_user_id, recharge_amount)
+        values(#{card_id}, #{s_user_id}, #{recharge_amount})
+    </insert>
+
+    <update id="update">
+        update vcc_recharge_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="card_id!=null and card_id!=''">
+                card_id = #{card_id},
+            </if>
+            <if test="s_user_id!=null and s_user_id!=''">
+                s_user_id = #{s_user_id},
+            </if>
+            <if test="recharge_amount!=null and recharge_amount!=''">
+                recharge_amount = #{recharge_amount}
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from vcc_recharge_record where id = #{id}
+    </delete>
+
+
+
+
+
+</mapper>

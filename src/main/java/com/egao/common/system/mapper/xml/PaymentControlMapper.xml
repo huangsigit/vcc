@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.egao.common.system.mapper.PaymentControlMapper">
+
+    <select id="selectAll" resultType="java.util.HashMap">
+        select pc.*,cucu.user_id,cucu.customer_id,cucu.card_number from vcc_payment_control pc
+        <choose>
+            <when test="user_id!=null and user_id!='' || card_number!=null and card_number!=''">
+                INNER JOIN
+            </when>
+            <otherwise>
+                LEFT JOIN
+            </otherwise>
+        </choose>
+        (
+            select cuc.*,u.customer_id from(
+                select c.*,uc.user_id from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                where 1 = 1
+                <if test="user_id!=null and user_id!=''">
+                    and uc.user_id = #{user_id}
+                </if>
+                <if test="card_number!=null and card_number!=''">
+                    and c.card_number = #{card_number}
+                </if>
+            )cuc LEFT JOIN sys_user u on u.user_id = cuc.user_id
+        )cucu on cucu.purchase_request_id = pc.purchaseRequestID
+        where 1 = 1
+        <if test="purchase_request_id!=null and purchase_request_id!=''">
+            and pc.purchaseRequestId like '%${purchase_request_id}%'
+        </if>
+        <if test="merchant_name!=null and merchant_name!=''">
+            and pc.merchantName like '%${merchant_name}%'
+        </if>
+        <if test="billing_amount!=null and billing_amount!=''">
+            and pc.billingAmount = #{billing_amount}
+        </if>
+        <if test="vcn_status!=null and vcn_status!=''">
+            and pc.vcnStatus = #{vcn_status}
+        </if>
+        <if test="transaction_type!=null and transaction_type!=''">
+            and pc.transactionType = #{transaction_type}
+        </if>
+        <if test="startTime!=null and endTime!=''">
+            and pc.transactionDate BETWEEN #{startTime} and #{endTime}
+        </if>
+        order by pc.transactionDate desc
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectAllCount" resultType="java.lang.Integer">
+        select count(*) from(
+            select pc.*,cucu.user_id,cucu.customer_id from vcc_payment_control pc
+            <choose>
+                <when test="user_id!=null and user_id!='' || card_number!=null and card_number!=''">
+                    INNER JOIN
+                </when>
+                <otherwise>
+                    LEFT JOIN
+                </otherwise>
+            </choose>
+            (
+            select cuc.*,u.customer_id from(
+                    select c.*,uc.user_id from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                    where 1 = 1
+                    <if test="user_id!=null and user_id!=''">
+                        and uc.user_id = #{user_id}
+                    </if>
+                    <if test="card_number!=null and card_number!=''">
+                        and c.card_number = #{card_number}
+                    </if>
+                )cuc LEFT JOIN sys_user u on u.user_id = cuc.user_id
+            )cucu on cucu.purchase_request_id = pc.purchaseRequestID
+            where 1 = 1
+            <if test="purchase_request_id!=null and purchase_request_id!=''">
+                and pc.purchaseRequestId like '%${purchase_request_id}%'
+            </if>
+            <if test="merchant_name!=null and merchant_name!=''">
+                and pc.merchantName like '%${merchant_name}%'
+            </if>
+            <if test="billing_amount!=null and billing_amount!=''">
+                and pc.billingAmount = #{billing_amount}
+            </if>
+
+            <if test="vcn_status!=null and vcn_status!=''">
+                and pc.vcnStatus = #{vcn_status}
+            </if>
+            <if test="transaction_type!=null and transaction_type!=''">
+                and pc.transactionType = #{transaction_type}
+            </if>
+            <if test="startTime!=null and endTime!=''">
+                and pc.transactionDate BETWEEN #{startTime} and #{endTime}
+            </if>
+        )cucpc
+    </select>
+
+
+    <select id="selectByUserId" resultType="java.util.HashMap">
+        select * from(
+            select uc.* from sys_user u left JOIN
+            (
+              select c.*,uc.user_id from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                where 1 = 1
+                <if test="user_id!=null and user_id!=''">
+                    and uc.user_id = #{user_id}
+                </if>
+            )uc
+            on uc.user_id = u.user_id
+        )ucu inner JOIN vcc_payment_control pc on pc.purchaseRequestID = ucu.purchase_request_id
+        where 1 = 1
+        <if test="purchase_request_id!=null and purchase_request_id!=''">
+            and pc.purchaseRequestId like '%${purchase_request_id}%'
+        </if>
+        <if test="merchant_name!=null and merchant_name!=''">
+            and pc.merchantName like '%${merchant_name}%'
+        </if>
+        <if test="billing_amount!=null and billing_amount!=''">
+            and pc.billingAmount = #{billing_amount}
+        </if>
+
+        <if test="vcn_status!=null and vcn_status!=''">
+            and pc.vcnStatus = #{vcn_status}
+        </if>
+        <if test="transaction_type!=null and transaction_type!=''">
+            and pc.transactionType = #{transaction_type}
+        </if>
+        <if test="startTime!=null and endTime!=''">
+            and pc.transactionDate BETWEEN #{startTime} and #{endTime}
+        </if>
+        <if test="user_id!=null and user_id!=''">
+            and pc.transactionType != '进货退回'
+        </if>
+        order by pc.transactionDate desc
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectByUserIdCount" resultType="java.lang.Integer">
+        select count(*) from(
+            select ucu.* from(
+                select uc.* from sys_user u left JOIN
+                (
+                select c.*,uc.user_id from vcc_card c LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                where 1 = 1
+                <if test="user_id!=null and user_id!=''">
+                    and uc.user_id = #{user_id}
+                </if>
+                )uc
+                on uc.user_id = u.user_id
+            )ucu inner JOIN vcc_payment_control pc on pc.purchaseRequestID = ucu.purchase_request_id
+            where 1 = 1
+            <if test="purchase_request_id!=null and purchase_request_id!=''">
+                and pc.purchaseRequestId like '%${purchase_request_id}%'
+            </if>
+            <if test="merchant_name!=null and merchant_name!=''">
+                and pc.merchantName like '%${merchant_name}%'
+            </if>
+            <if test="billing_amount!=null and billing_amount!=''">
+                and pc.billingAmount = #{billing_amount}
+            </if>
+
+            <if test="vcn_status!=null and vcn_status!=''">
+                and pc.vcnStatus = #{vcn_status}
+            </if>
+            <if test="transaction_type!=null and transaction_type!=''">
+                and pc.transactionType = #{transaction_type}
+            </if>
+            <if test="startTime!=null and endTime!=''">
+                and pc.transactionDate BETWEEN #{startTime} and #{endTime}
+            </if>
+            <if test="user_id!=null and user_id!=''">
+                and pc.transactionType != '进货退回'
+            </if>
+        )pc
+    </select>
+
+    <select id="selectByDateAndMerchant" resultType="java.util.HashMap">
+        select * from vcc_payment_control where purchaseRequestID = #{purchaseRequestID} and inControlTransactionDate = #{inControlTransactionDate}
+        and merchantName = #{merchantName} and billingAmount = #{billingAmount}
+    </select>
+
+
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        <selectKey resultType="int" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        insert into vcc_payment_control(purchaseRequestID, vcnStatus, inControlTransactionDate, transactionDate, transactionType, transactionSobType
+        , billingAmount, billingCurrency, merchantAmount, merchantCurrency, merchantName, realCardAlias, virtualCardNumber)
+        values(#{purchaseRequestID}, #{vcnStatus}, #{inControlTransactionDate}, #{transactionDate}, #{transactionType}, #{transactionSobType}
+        , #{billingAmount}, #{billingCurrency}, #{merchantAmount}, #{merchantCurrency}, #{merchantName}, #{realCardAlias}, #{virtualCardNumber})
+    </insert>
+
+<!--
+    <update id="update">
+        update vcc_payment_control
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="dates!=null and dates!=''">
+                dates = #{dates},
+            </if>
+            <if test="item_id!=null and item_id!=''">
+                item_id = #{item_id},
+            </if>
+            <if test="channel_id!=null and channel_id!=''">
+                channel_id = #{channel_id},
+            </if>
+            <if test="cost!=null and cost!=''">
+                cost = #{cost}
+            </if>
+        </trim>
+        where cost_id = #{costId}
+    </update>
+-->
+
+
+    <delete id="deleteById">
+        delete from vcc_payment_control where id = #{id}
+    </delete>
+
+
+</mapper>

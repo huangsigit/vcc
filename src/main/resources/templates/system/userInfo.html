@@ -1,0 +1,794 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <:include file="../common/css.html" title="字典管理"/>
+    <style>
+        #dictTable + .layui-table-view .layui-table-tool-temp {
+            padding-right: 0;
+        }
+
+        #dictTable + .layui-table-view .layui-table-body tbody > tr td {
+            cursor: pointer;
+        }
+
+        #dictTable + .layui-table-view .layui-table-body tbody > tr.layui-table-click {
+            background-color: #fff3e0;
+        }
+
+        #dictTable + .layui-table-view .layui-table-body tbody > tr.layui-table-click td:last-child > div:before {
+            position: absolute;
+            right: 6px;
+            content: "\e602";
+            font-size: 12px;
+            font-style: normal;
+            font-family: layui-icon !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .layui-input-inline.layui-word-aux {
+            word-break: break-all;
+            padding: 7px 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        .layui-form-label {
+            width: 120px;
+        }
+
+
+    </style>
+</head>
+<body>
+<!-- 正文开始 -->
+<div class="layui-fluid" style="padding-bottom: 0;">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md3">
+            <div class="layui-card">
+                <div class="layui-card-body" style="padding: 10px;">
+                    <!-- 表格工具栏1 -->
+                    <form class="layui-form toolbar">
+                        <div class="layui-form-item" style="margin-bottom: 10px;">
+                            <input name="dictName" class="layui-input" placeholder="输入字典名称"
+                                   style="max-width: 140px;display: inline-block;"/>&emsp;
+                            <button class="layui-btn icon-btn" lay-filter="dictTbSearch" lay-submit>
+                                <i class="layui-icon">&#xe615;</i>搜索
+                            </button>
+                        </div>
+                    </form>
+                    <!-- 数据表格1 -->
+                    <table id="dictTable" lay-filter="dictTable"></table>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md9">
+            <div class="layui-card">
+                <div class="layui-card-body" style="padding: 10px;">
+
+                    <ul class="layui-tab-title">
+                        <li class="layui-this">个人信息</li>
+                    </ul>
+
+                    <!-- 表格工具栏2 -->
+<!--
+                    <form class="layui-form toolbar">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">字典项名称:</label>
+                                <div class="layui-input-inline">
+                                    <input name="dictDataName" class="layui-input" placeholder="输入字典名称"/>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">字典项标识:</label>
+                                <div class="layui-input-inline">
+                                    <input name="dictDataCode" class="layui-input" placeholder="输入字典标识"/>
+                                </div>
+                            </div>
+                            <div class="layui-inline">&emsp;
+                                <button class="layui-btn icon-btn" lay-filter="dictDataTbSearch" lay-submit>
+                                    <i class="layui-icon">&#xe615;</i>搜索
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+-->
+
+                    <!-- 数据表格2 -->
+                    <!--<table id="dictDataTable" lay-filter="dictDataTable"></table>-->
+                    <table class="layui-table">
+<!--
+                        <div class="layui-input-inline">
+                            <label class="layui-input-inline">用户名:</label>
+                            <div class="layui-input-inline">123456</div>
+                        </div>
+-->
+
+<!--
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">
+                                <:if test="${type==0}">对外</:if>卡额度:</label>
+                            <div id="external_amount" name="external_amount" class="layui-input-block layui-word-aux"></div>
+                        </div>
+-->
+
+                        <div class="layui-form-item">
+                        </div>
+
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" >代号:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="customer_id"></div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">服务费:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="service_charge"></div>
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">最低开卡限额:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="min_open_card_limit"></div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">开卡费用:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="open_card_charge"></div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">累计已开卡数量:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="total_open_card_count"></div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">已激活卡数量:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="active_card_count"></div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">累计转账金额:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="transfer_amount"></div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">实际消耗总额度:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="billing_amount"></div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">已分配总额度:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="external_amount"></div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">可分配充值额度:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="allot_recharge_amount"></div>
+                            </div>
+                        </div>
+                        <:if test="${type==0}">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">剩余信用额度:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="remaining_credit_amount"></div>
+                            </div>
+                        </div>
+                        </:if>
+
+<!--
+                        <div class="layui-inline">
+                            <label class="layui-form-label">备注:</label>
+                            <div class="layui-input-inline">
+                                <div class="layui-input-inline layui-word-aux" id="customer_id">123456</div>
+                            </div>
+                        </div>
+-->
+
+
+
+                    </table>
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- 表单弹窗1 -->
+<script type="text/html" id="dictEditDialog">
+    <form id="dictEditForm" lay-filter="dictEditForm" class="layui-form model-form">
+        <input name="dictId" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">字典名称:</label>
+            <div class="layui-input-block">
+                <input name="dictName" placeholder="请输入字典名称" class="layui-input"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">字典标识:</label>
+            <div class="layui-input-block">
+                <input name="dictCode" placeholder="请输入字典标识" class="layui-input"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">排序号:</label>
+            <div class="layui-input-block">
+                <input name="sortNumber" placeholder="请输入排序号" class="layui-input" type="number"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注:</label>
+            <div class="layui-input-block">
+                <textarea name="comments" placeholder="请输入备注" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn" lay-filter="dictEditSubmit" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+<script type="text/html" id="dictDataTbBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs"
+       data-dropdown="#dictTbDelDrop{{d.LAY_INDEX}}" no-shade="true">删除</a>
+    <div class="dropdown-menu-nav dropdown-popconfirm dropdown-top-right layui-hide"
+         id="dictTbDelDrop{{d.LAY_INDEX}}"
+         style="max-width: 200px;white-space: normal;min-width: auto;margin-left: 10px;">
+        <div class="dropdown-anchor"></div>
+        <div class="dropdown-popconfirm-title">
+            <i class="layui-icon layui-icon-help"></i>
+            确定要删除{{d.dictDataName}}吗？
+        </div>
+        <div class="dropdown-popconfirm-btn">
+            <a class="layui-btn" btn-cancel>取消</a>
+            <a class="layui-btn layui-btn-normal" lay-event="del">确定</a>
+        </div>
+    </div>
+</script>
+<!-- 表单弹窗 -->
+<script type="text/html" id="dictDataEditDialog">
+    <form id="dictDataEditForm" lay-filter="dictDataEditForm" class="layui-form model-form" style="padding-left: 10px;">
+        <input name="dictDataId" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required" style="padding-left: 0;width: 95px;">字典项名称:</label>
+            <div class="layui-input-block">
+                <input name="dictDataName" placeholder="请输入字典项名称" class="layui-input"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required" style="padding-left: 0;width: 95px;">字典项标识:</label>
+            <div class="layui-input-block">
+                <input name="dictDataCode" placeholder="请输入字典标识" class="layui-input"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">排序号:</label>
+            <div class="layui-input-block">
+                <input name="sortNumber" placeholder="请输入排序号" class="layui-input" type="number"
+                       lay-verType="tips" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注:</label>
+            <div class="layui-input-block">
+                <textarea name="comments" placeholder="请输入备注" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn" lay-filter="dictDataEditSubmit" lay-submit>保存</button>
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+<:include file="../common/js.html"/>
+
+<script type="text/html" id="operRecordInfoDialog">
+    <div class="layui-form model-form layui-form-info">
+
+        <input id="operId" name="id" type="hidden" value="{{d.id}}"/>
+        <div class="layui-row">
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">请求ID:</label>
+                    <div id="requestId" class="layui-input-block layui-word-aux">{{d.purchase_request_id}}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">卡号:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.card_number}}</div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">编号:</label>
+                    <!--<div class="layui-input-block layui-word-aux">{{layui.util.toDateString(d.createTime)}}</div>-->
+                    <div class="layui-input-block layui-word-aux">{{d.number}}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">使用状态:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.statusStr}}</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">销卡日期:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.logout_time}}</div>
+                </div>
+
+                {{# if(d.type==0){ }}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">归属客户:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.customer_name}}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">内部开卡日期:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.create_time}}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">外部开卡日期:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.external_create_time}}</div>
+                </div>
+                {{# }else{ }}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">开卡日期:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.external_create_time}}</div>
+                </div>
+
+                {{# } }}
+
+
+            </div>
+
+
+
+            <div class="layui-col-md6">
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">有效期:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.end_time}}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">PIN:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.pin}}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">已用额度:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.use_amount}}</div>
+                </div>
+
+
+
+                {{# if(d.type==0){ }}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">实际卡额度:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.actual_amount}}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">实际剩于额度:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.actual_remaining_amount}}</div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">对外卡额度:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.external_amount}}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">对外剩于额度:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.external_remaining_amount}}</div>
+                </div>
+                {{# }else{ }}
+
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">卡额度:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.external_amount}}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">剩于额度:</label>
+                    <div class="layui-input-block layui-word-aux">{{d.external_remaining_amount}}</div>
+                </div>
+                {{# } }}
+
+            </div>
+
+
+
+
+        </div>
+
+        <div class="layui-form-item text-center">
+            <!--<button id="recharge" class="layui-btn icon-btn" lay-filter="recharge" lay-submit><i class="layui-icon"></i>充值</button>-->
+
+            {{# if(d.type==0){ }}
+            <!--<a class="layui-btn layui-btn-primary" lay-event="allot" >分配</a>-->
+            <button id="allot" class="layui-btn icon-btn" lay-filter="allot" lay-submit><i class="layui-icon"></i>分配卡片</button>
+            {{# }else{ }}
+            <!--<a class="layui-btn layui-btn-primary" lay-event="info" >详情</a>-->
+            {{# } }}
+            <!--<button id="logout" class="layui-btn icon-btn" lay-filter="logout" lay-submit><i class="layui-icon"></i>注销卡片</button>-->
+
+            <!--
+                        <a class="layui-btn layui-btn-danger layui-btn-xs"
+                           data-dropdown="#cardTbDrop{{d.LAY_INDEX}}">注销卡片</a>
+                        &lt;!&ndash;<a class="layui-btn layui-btn-xs" lay-event="reset">重置密码</a>&ndash;&gt;
+                        <div class="dropdown-menu-nav dropdown-popconfirm dropdown-top-right layui-hide"
+                             id="cardTbDrop{{d.LAY_INDEX}}"
+                             style="max-width: 200px;white-space: normal;min-width: auto;margin-left: 10px;">
+                            <div class="dropdown-anchor"></div>
+                            <div class="dropdown-popconfirm-title">
+                                <i class="layui-icon layui-icon-help"></i>
+                                &lt;!&ndash;确定要删除{{d.nickName}}吗？&ndash;&gt;
+                                确定要注销卡片吗？
+                            </div>
+                            <div class="dropdown-popconfirm-btn">
+                                <a class="layui-btn" btn-cancel>取消</a>
+                                <a class="layui-btn layui-btn-normal" lay-event="logout">确定</a>
+                            </div>
+                        </div>
+            -->
+
+        </div>
+
+
+        <div class="layui-form-item text-right" style="margin-top: 15px;">
+            <button class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+        </div>
+    </div>
+</script>
+
+
+
+
+
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'admin', 'dropdown', 'tableX'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var tableX = layui.tableX;
+        var selObj;  // 左表选中数据
+        // form.render('select', 'userInfoForm');
+
+        /* 渲染表格 */
+        var insTb = table.render({
+            elem: '#dictTable',
+            url: 'customer/getCustomer',
+            height: 'full-100',
+/*
+            toolbar: ['<p>',
+                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>&nbsp;',
+                '<button lay-event="edit" class="layui-btn layui-btn-sm layui-btn-warm icon-btn"><i class="layui-icon">&#xe642;</i>修改</button>&nbsp;',
+                '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>',
+                '</p>'].join(''),
+*/
+
+            defaultToolbar: [],
+            cols: [[
+                {type: 'numbers'},
+                // {field: 'customer_name', title: '客户名称'}
+                {field: 'customer_id', title: '代号'}
+            ]],
+            done: function (res, curr, count) {
+
+                console.log("res:"+JSON.stringify(res))
+
+                // $('#dictTable+.layui-table-view .layui-table-body tbody>tr:first').trigger('click');
+
+                // 加载完后自动点击第一行
+                var firstType = $('.layui-table-view[lay-id="dictTable"]').children('.layui-table-box').children('.layui-table-body').find('table tbody tr[data-index="0"]');
+                firstType.click();
+
+
+
+            }
+        });
+
+
+        /* 表格搜索 */
+        form.on('submit(dictTbSearch)', function (data) {
+            insTb.reload({where: data.field});
+            return false;
+        });
+
+
+        /* 表格头工具栏点击事件 */
+        table.on('toolbar(dictTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showEditModel();
+            } else if (obj.event === 'edit') { // 修改
+                showEditModel(selObj.data, selObj);
+            } else if (obj.event === 'del') { // 删除
+                doDel(selObj);
+            }
+        });
+
+
+        /* 监听行单击事件 */
+        table.on('row(dictTable)', function (obj) {
+            console.log("监听行单击事件:"+JSON.stringify(obj))
+
+            selObj = obj;
+            obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+
+
+            admin.req('customerInfo/page', {user_id: obj.data.user_id}, function (res) {
+                console.log("info res："+JSON.stringify(res.data))
+
+                // form.render('select', 'operRecordInfoDialog');
+
+                var customer_id = document.getElementById("customer_id");
+                customer_id.innerText=res.data[0].customer_id;
+
+                var service_charge = document.getElementById("service_charge");
+                service_charge.innerText=res.data[0].service_charge + "%";
+
+                var min_open_card_limit = document.getElementById("min_open_card_limit");
+                min_open_card_limit.innerText=res.data[0].min_open_card_limit;
+
+                var open_card_charge = document.getElementById("open_card_charge");
+                open_card_charge.innerText=res.data[0].open_card_charge;
+
+                var total_open_card_count = document.getElementById("total_open_card_count");
+                var totalOpenCardCount = res.data[0].total_open_card_count;
+                if(!totalOpenCardCount)(
+                    totalOpenCardCount = 0
+                )
+                total_open_card_count.innerText=totalOpenCardCount;
+
+                var active_card_count = document.getElementById("active_card_count");
+
+                var activeCardCount = res.data[0].active_card_count;
+                if(!activeCardCount)(
+                    activeCardCount = 0
+                )
+                active_card_count.innerText=activeCardCount
+
+                var transfer_amount = document.getElementById("transfer_amount");
+                transfer_amount.innerText=res.data[0].transfer_amount;
+
+                var billing_amount = document.getElementById("billing_amount");
+                billing_amount.innerText=res.data[0].billing_amount;
+
+                var external_amount = document.getElementById("external_amount");
+                external_amount.innerText=res.data[0].external_amount;
+
+                var allot_recharge_amount = document.getElementById("allot_recharge_amount");
+                allot_recharge_amount.innerText=res.data[0].allot_recharge_amount;
+
+                var remaining_credit_amount = document.getElementById("remaining_credit_amount");
+                if(remaining_credit_amount){
+                    remaining_credit_amount.innerText=res.data[0].remaining_credit_amount;
+                }
+
+
+
+                /*
+                                admin.open({
+                                    type: 1,
+                                    title: '详情',
+                                    area: '600px',
+                                    content: admin.util.tpl($('#operRecordInfoDialog').html(), res.data)
+                                });
+                */
+
+
+            }, 'get');
+
+
+
+
+/*
+            insTb2.reload({
+                where: {dictId: obj.data.dictId},
+                page: {curr: 1},
+                url: 'dictdata/page'
+            });
+*/
+
+        });
+
+        /* 显示表单弹窗 */
+        function showEditModel(mData, obj) {
+            admin.open({
+                type: 1,
+                title: (mData ? '修改' : '添加') + '字典',
+                content: $('#dictEditDialog').html(),
+                success: function (layero, dIndex) {
+                    // 回显表单数据
+                    form.val('dictEditForm', mData);
+                    // 表单提交事件
+                    form.on('submit(dictEditSubmit)', function (data) {
+                        var loadIndex = layer.load(2);
+                        $.post(mData ? 'dict/update' : 'dict/save', data.field, function (res) {
+                            layer.close(loadIndex);
+                            if (0 === res.code) {
+                                layer.close(dIndex);
+                                layer.msg(res.msg, {icon: 1});
+                                if (obj) {
+                                    obj.update(data.field);
+                                } else {
+                                    insTb.reload();
+                                }
+                            } else {
+                                layer.msg(res.msg, {icon: 2, anim: 6});
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+        }
+
+        /* 删除 */
+        function doDel(obj) {
+            admin.confirm('确定要删除' + obj.data.dictName + '吗？', function (i) {
+                layer.close(i);
+                var loadIndex = layer.load(2);
+                $.get('dict/remove', {id: obj.data.dictId}, function (res) {
+                    layer.close(loadIndex);
+                    if (0 === res.code) {
+                        layer.msg(res.msg, {icon: 1});
+                        obj.del();
+                    } else {
+                        layer.msg(res.msg, {icon: 2, anim: 6});
+                    }
+                });
+            });
+        }
+
+        /* 渲染表格2 */
+        var insTb2 = tableX.render({
+            elem: '#dictDataTable',
+            data: [],
+            height: 'full-96',
+            page: true,
+            toolbar: ['<p>',
+                '<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>&nbsp;',
+                '<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>&nbsp;',
+                '</p>'].join(''),
+            cellMinWidth: 100,
+            cols: [[
+                {type: 'checkbox'},
+                {type: 'numbers'},
+                {field: 'dictDataName', title: '字典项名称', sort: true},
+                {field: 'dictDataCode', title: '字典项标识', sort: true},
+                {field: 'sortNumber', title: '排序号', sort: true, align: 'center', width: 90, minWidth: 90},
+                {field: 'comments', title: '备注', sort: true},
+                {
+                    field: 'createTime', title: '创建时间', templet: function (d) {
+                        return util.toDateString(d.createTime);
+                    }, sort: true, width: 160
+                },
+                {title: '操作', toolbar: '#dictDataTbBar', align: 'center', width: 120, minWidth: 120}
+            ]]
+        });
+
+        /* 表格2搜索 */
+        form.on('submit(dictDataTbSearch)', function (data) {
+            insTb2.reload({where: data.field, page: {curr: 1}});
+            return false;
+        });
+
+        /* 表格2工具条点击事件 */
+        table.on('tool(dictDataTable)', function (obj) {
+            if (obj.event === 'edit') { // 修改
+                showEditModel2(obj.data);
+            } else if (obj.event === 'del') { // 删除
+                doDel2(obj);
+            }
+        });
+
+        /* 表格2头工具栏点击事件 */
+        table.on('toolbar(dictDataTable)', function (obj) {
+            if (obj.event === 'add') { // 添加
+                showEditModel2();
+            } else if (obj.event === 'del') { // 删除
+                var checkRows = table.checkStatus('dictDataTable');
+                if (checkRows.data.length === 0) {
+                    layer.msg('请选择要删除的数据', {icon: 2, anim: 6});
+                    return;
+                }
+                var ids = checkRows.data.map(function (d) {
+                    return d.dictDataId;
+                });
+                doDel2({ids: ids});
+            }
+        });
+
+        /* 显示表单弹窗2 */
+        function showEditModel2(mData) {
+            admin.open({
+                type: 1,
+                title: (mData ? '修改' : '添加') + '数据字典项',
+                content: $('#dictDataEditDialog').html(),
+                success: function (layero, dIndex) {
+                    // 回显表单数据
+                    form.val('dictDataEditForm', mData);
+                    // 表单提交事件
+                    form.on('submit(dictDataEditSubmit)', function (data) {
+                        data.field.dictId = selObj.data.dictId;
+                        var loadIndex = layer.load(2);
+                        $.post(mData ? 'dictdata/update' : 'dictdata/remove', data.field, function (res) {
+                            layer.close(loadIndex);
+                            if (0 === res.code) {
+                                layer.close(dIndex);
+                                layer.msg(res.msg, {icon: 1});
+                                insTb2.reload({page: {curr: 1}});
+                            } else {
+                                layer.msg(res.msg, {icon: 2, anim: 6});
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+        }
+
+        /* 删除2 */
+        function doDel2(obj) {
+            if (obj.ids) {
+                admin.confirm('确定要删除选中数据吗？', function (i) {
+                    layer.close(i);
+                    var loadIndex = layer.load(2);
+                    admin.req('dictdata/removeBatch', JSON.stringify(obj.ids), function (res) {
+                        layer.close(loadIndex);
+                        if (0 === res.code) {
+                            layer.msg(res.msg, {icon: 1});
+                            insTb2.reload({page: {curr: 1}});
+                        } else {
+                            layer.msg(res.msg, {icon: 2, anim: 6});
+                        }
+                    });
+                });
+            } else {
+                var loadIndex = layer.load(2);
+                $.get('dictdata/remove', {id: obj.data.dictDataId}, function (res) {
+                    layer.close(loadIndex);
+                    if (0 === res.code) {
+                        layer.msg(res.msg, {icon: 1});
+                        insTb2.reload({page: {curr: 1}});
+                    } else {
+                        layer.msg(res.msg, {icon: 2, anim: 6});
+                    }
+                });
+            }
+        }
+
+    });
+</script>
+</body>
+</html>

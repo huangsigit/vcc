@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.egao.common.system.mapper.ApplyRecordMapper">
+
+    <select id="select" resultType="java.util.HashMap">
+        select arc.*,uc.user_id from(
+            select ar.*,c.status,c.card_number from(
+                select ar.*,u.customer_id o_customer_id,u.customer_name o_customer_name from(
+                    select ar.*,u.customer_id s_customer_id,u.customer_name s_customer_name from vcc_apply_record ar LEFT JOIN sys_user u on u.user_id = ar.s_user_id
+                )ar LEFT JOIN sys_user u on u.user_id = ar.o_user_id
+            )ar LEFT JOIN vcc_card c on c.purchase_request_id = ar.purchase_request_id
+            where 1 = 1
+            <if test="purchase_request_id!=null and purchase_request_id!=''">
+                and ar.purchase_request_id like '%${purchase_request_id}%'
+            </if>
+            <if test="apply_type!=null">
+                and ar.apply_type = #{apply_type}
+            </if>
+            <if test="startTime!=null and endTime!=''">
+                and ar.create_time BETWEEN #{startTime} and #{endTime}
+            </if>
+        )arc LEFT JOIN vcc_user_card uc on arc.card_id = uc.card_id
+        where 1 = 1
+        <if test="user_id!=null and user_id!=''">
+            and uc.user_id = #{user_id}
+        </if>
+        order by arc.create_time desc
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from(
+            select arc.*,uc.user_id from(
+                select ar.*,c.status,c.card_number from(
+                    select ar.*,u.customer_id o_customer_id,u.customer_name o_customer_name from(
+                      select ar.*,u.customer_id s_customer_id,u.customer_name s_customer_name from vcc_apply_record ar LEFT JOIN sys_user u on u.user_id = ar.s_user_id
+                    )ar LEFT JOIN sys_user u on u.user_id = ar.o_user_id
+                )ar LEFT JOIN vcc_card c on c.purchase_request_id = ar.purchase_request_id
+                where 1 = 1
+                <if test="purchase_request_id!=null and purchase_request_id!=''">
+                    and ar.purchase_request_id like '%${purchase_request_id}%'
+                </if>
+                <if test="apply_type!=null">
+                    and ar.apply_type = #{apply_type}
+                </if>
+                <if test="startTime!=null and endTime!=''">
+                    and ar.create_time BETWEEN #{startTime} and #{endTime}
+                </if>
+            )arc LEFT JOIN vcc_user_card uc on arc.card_id = uc.card_id
+            where 1 = 1
+            <if test="user_id!=null and user_id!=''">
+                and uc.user_id = #{user_id}
+            </if>
+        )arc
+    </select>
+
+    <select id="selectById" resultType="java.util.HashMap">
+        select * from vcc_apply_record where id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        <selectKey resultType="int" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        insert into vcc_apply_record(purchase_request_id, s_user_id, o_user_id, card_id, apply_type, back_status, front_status)
+        values(#{purchase_request_id}, #{s_user_id}, #{o_user_id}, #{card_id}, #{apply_type}, #{back_status}, #{front_status})
+    </insert>
+
+    <update id="update">
+        update vcc_apply_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="purchase_request_id!=null">
+                purchase_request_id = #{purchase_request_id},
+            </if>
+            <if test="s_user_id!=null">
+                s_user_id = #{s_user_id},
+            </if>
+            <if test="o_user_id!=null">
+                o_user_id = #{o_user_id},
+            </if>
+            <if test="card_id!=null">
+                card_id = #{card_id},
+            </if>
+            <if test="apply_type!=null">
+                apply_type = #{apply_type},
+            </if>
+            <if test="back_status!=null">
+                back_status = #{back_status},
+            </if>
+            <if test="front_status!=null">
+                front_status = #{front_status}
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from vcc_apply_record where id = #{id}
+    </delete>
+
+
+
+
+
+</mapper>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.egao.common.system.mapper.TransferMapper">
+
+    <select id="select" resultType="java.util.HashMap">
+        select tu.*,u.customer_id s_customer_id from(
+            select t.*,u.user_id userId,u.customer_name customerName,u.customer_id from vcc_transfer t LEFT JOIN sys_user u on u.user_id = t.user_id
+        )tu LEFT JOIN sys_user u on u.user_id = tu.s_user_id
+        where 1 = 1
+        <if test="user_id!=null and user_id!=''">
+            and tu.user_id = #{user_id}
+        </if>
+        <if test="startTime!=null and endTime!=''">
+            and tu.transfer_time BETWEEN #{startTime} and #{endTime}
+        </if>
+        order by tu.create_time desc
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from(
+            select * from vcc_transfer oc
+            where 1 = 1
+            <if test="user_id!=null and user_id!=''">
+                and oc.user_id = #{user_id}
+            </if>
+            <if test="startTime!=null and endTime!=''">
+                and oc.transfer_time BETWEEN #{startTime} and #{endTime}
+            </if>
+        )pc
+    </select>
+
+    <select id="selectById" resultType="java.util.HashMap">
+        select * from vcc_transfer where id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        <selectKey resultType="int" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        insert into vcc_transfer(user_id, s_user_id, transfer_amount, actual_received_amount, service_charge, status, transfer_time)
+        values(#{user_id}, #{s_user_id}, #{transfer_amount}, #{actual_received_amount}, #{service_charge}, #{status}, #{transfer_time})
+    </insert>
+
+
+    <update id="update">
+        update vcc_transfer
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="user_id!=null and user_id!=''">
+                user_id = #{user_id},
+            </if>
+            <if test="s_user_id!=null and s_user_id!=''">
+                s_user_id = #{s_user_id},
+            </if>
+            <if test="transfer_amount!=null and transfer_amount!=''">
+                transfer_amount = #{transfer_amount},
+            </if>
+            <if test="actual_received_amount!=null and actual_received_amount!=''">
+                actual_received_amount = #{actual_received_amount},
+            </if>
+            <if test="service_charge!=null and service_charge!=''">
+                service_charge = #{service_charge},
+            </if>
+            <if test="status!=null and status!=''">
+                status = #{status},
+            </if>
+            <if test="transfer_time!=null and transfer_time!=''">
+                transfer_time = #{transfer_time}
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from vcc_transfer where id = #{id}
+    </delete>
+
+
+
+
+
+</mapper>

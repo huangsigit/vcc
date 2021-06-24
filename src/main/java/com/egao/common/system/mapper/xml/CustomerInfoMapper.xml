@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.egao.common.system.mapper.CustomerInfoMapper">
+
+    <select id="select" resultType="java.util.HashMap">
+        select c.*,u.customer_name from vcc_customer_info c LEFT JOIN sys_user u on u.customer_id = c.customer_id
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from(
+            select * from vcc_customer_info
+        )pc
+    </select>
+
+    <select id="selectById" resultType="java.util.HashMap">
+        select * from vcc_customer_info where id = #{id}
+    </select>
+
+    <select id="selectByCustomerId" resultType="java.util.HashMap">
+        select * from vcc_customer_info where customer_id = #{customer_id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        <selectKey resultType="long" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        insert into vcc_customer_info(customer_id, total_open_card_count, total_recharge_amount, actual_consume_amount
+        , allot_amount, remaining_credit_amount, allot_recharge_amount, remark)
+        values(#{customer_id}, #{total_open_card_count}, #{total_recharge_amount}, #{actual_consume_amount}
+        , #{allot_amount}, #{remaining_credit_amount}, #{allot_recharge_amount}, #{remark})
+    </insert>
+
+    <update id="update">
+        update vcc_customer_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="customer_id!=null and customer_id!=''">
+                customer_id = #{customer_id},
+            </if>
+            <if test="total_open_card_count!=null and total_open_card_count!=''">
+                total_open_card_count = #{total_open_card_count},
+            </if>
+            <if test="total_recharge_amount!=null and total_recharge_amount!=''">
+                total_recharge_amount = #{total_recharge_amount},
+            </if>
+            <if test="actual_consume_amount!=null and actual_consume_amount!=''">
+                actual_consume_amount = #{actual_consume_amount},
+            </if>
+            <if test="allot_amount!=null and allot_amount!=''">
+                allot_amount = #{allot_amount},
+            </if>
+            <if test="remaining_credit_amount!=null and remaining_credit_amount!=''">
+                remaining_credit_amount = #{remaining_credit_amount},
+            </if>
+            <if test="allot_recharge_amount!=null and allot_recharge_amount!=''">
+                allot_recharge_amount = #{allot_recharge_amount},
+            </if>
+            <if test="remark!=null and remark!=''">
+                remark = #{remark}
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+
+    <delete id="deleteById">
+        delete from vcc_customer_info where id = #{id}
+    </delete>
+
+
+</mapper>

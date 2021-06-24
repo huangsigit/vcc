@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.egao.common.system.mapper.OpenCardMapper">
+
+    <select id="select" resultType="java.util.HashMap">
+        select oc.*,u.user_id userId,u.customer_name customerName,u.customer_id from vcc_open_card oc LEFT JOIN sys_user u on u.user_id = oc.user_id
+        where 1 = 1
+        <if test="user_id!=null and user_id!=''">
+            and oc.user_id = #{user_id}
+        </if>
+        <if test="startTime!=null and endTime!=''">
+            and oc.create_time BETWEEN #{startTime} and #{endTime}
+        </if>
+        order by oc.create_time desc
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from(
+            select * from vcc_open_card oc
+            where 1 = 1
+            <if test="user_id!=null and user_id!=''">
+                and oc.user_id = #{user_id}
+            </if>
+            <if test="startTime!=null and endTime!=''">
+                and oc.create_time BETWEEN #{startTime} and #{endTime}
+            </if>
+        )pc
+    </select>
+
+    <select id="selectById" resultType="java.util.HashMap">
+        select * from vcc_open_card where id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        <selectKey resultType="long" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        insert into vcc_open_card(user_id, open_card_count, init_amount, status)
+        values(#{user_id}, #{open_card_count}, #{init_amount}, #{status})
+    </insert>
+
+    <update id="update">
+        update vcc_open_card
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="user_id!=null and user_id!=''">
+                user_id = #{user_id},
+            </if>
+            <if test="open_card_count!=null and open_card_count!=''">
+                open_card_count = #{open_card_count},
+            </if>
+            <if test="init_amount!=null and init_amount!=''">
+                init_amount = #{init_amount},
+            </if>
+            <if test="status!=null and status!=''">
+                status = #{status}
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from vcc_open_card where id = #{id}
+    </delete>
+
+
+
+
+
+</mapper>

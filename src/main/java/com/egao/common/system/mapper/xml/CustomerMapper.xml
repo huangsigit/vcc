@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.egao.common.system.mapper.CustomerMapper">
+
+    <select id="select" resultType="java.util.HashMap">
+        select c.*,u.customer_name from vcc_customer c LEFT JOIN sys_user u on u.user_id = c.user_id
+        <if test="user_id!=null and user_id!=''">
+            where c.user_id = #{user_id}
+        </if>
+        limit #{page}, #{rows}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from(
+            select * from vcc_customer c
+            <if test="user_id!=null and user_id!=''">
+                where c.user_id = #{user_id}
+            </if>
+        )pc
+    </select>
+
+    <select id="selectAll" resultType="java.util.HashMap">
+        select u.user_id,u.customer_name,u.customer_id from sys_user u
+        <if test="user_id!=null and user_id!=''">
+            where u.user_id = #{user_id}
+        </if>
+    </select>
+
+    <select id="selectById" resultType="java.util.HashMap">
+        select * from vcc_customer where id = #{id}
+    </select>
+
+    <select id="selectByUserId" resultType="java.util.HashMap">
+        select * from vcc_customer where user_id = #{user_id}
+    </select>
+
+
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        <selectKey resultType="int" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        insert into vcc_customer(user_id, service_charge, min_open_card_limit, open_card_charge)
+        values(#{user_id}, #{service_charge}, #{min_open_card_limit}, #{open_card_charge})
+    </insert>
+
+    <update id="update">
+        update vcc_customer
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="user_id!=null and user_id!=''">
+                user_id = #{user_id},
+            </if>
+            <if test="service_charge!=null and service_charge!=''">
+                service_charge = #{service_charge},
+            </if>
+            <if test="service_charge!=null and service_charge!=''">
+                service_charge = #{service_charge},
+            </if>
+            <if test="min_open_card_limit!=null and min_open_card_limit!=''">
+                min_open_card_limit = #{min_open_card_limit},
+            </if>
+            <if test="open_card_charge!=null and open_card_charge!=''">
+                open_card_charge = #{open_card_charge}
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+
+    <delete id="deleteById">
+        delete from vcc_customer where id = #{id}
+    </delete>
+
+
+    <select id="selectCustomerAmount" resultType="java.util.HashMap">
+        select ut.*,cucpc.external_amount,cucpc.actual_amount,cucpc.billing_amount,cucpc.logout_billing_amount from(
+                select u.user_id,u.customer_name,u.customer_id,t.transfer_amount,t.actual_received_amount,u.remark
+                ,t.service_charge,u.service_charge userServiceCharge,u.min_open_card_limit,u.open_card_charge,u.warning_amount
+                from sys_user u
+                LEFT JOIN (
+                    /*-- 转账金额*/
+                    select user_id,sum(transfer_amount) transfer_amount,sum(actual_received_amount) actual_received_amount,service_charge from vcc_transfer GROUP BY user_id
+                )t on t.user_id = u.user_id
+                <if test="user_id!=null and user_id!=''">
+                    where u.user_id = #{user_id}
+                </if>
+        )ut LEFT JOIN
+        (
+                select
+                cuc.user_id,cuc.purchaseRequestID,sum(cuc.external_amount) external_amount,sum(cuc.actual_amount) actual_amount
+                ,sum(pc.billing_amount) billing_amount
+                ,sum(if(cuc.status=2,cuc.external_amount-pc.billing_amount,0)) logout_billing_amount
+                from(
+                        /*对外卡额度、实际卡额度*/
+                        select uc.user_id,c.purchase_request_id purchaseRequestID,c.status,sum(c.external_amount) external_amount,sum(c.actual_amount) actual_amount
+                        from vcc_card c
+                        LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                        group by uc.user_id,c.purchase_request_id
+
+                )cuc LEFT JOIN
+                (
+                        /*-- 实际消耗总金额*/
+                        select pc.purchaseRequestID,sum(pc.billingAmount) billing_amount from vcc_payment_control pc
+                        where pc.vcnStatus = '批准' and pc.transactionType = '授权' or pc.transactionType = '冲账' GROUP BY pc.purchaseRequestID
+                )pc on pc.purchaseRequestID = cuc.purchaseRequestID
+                group by cuc.user_id
+        )cucpc on cucpc.user_id = ut.user_id
+
+    </select>
+
+
+    <select id="selectCustomerCardCount" resultType="java.util.HashMap">
+        select ucuc.*,cuc.active_card_count from(
+            select u.user_id,cuc.total_open_card_count from sys_user u LEFT JOIN(
+                    /*累计已开卡数量*/
+                    select uc.user_id,count(*) total_open_card_count from vcc_card c
+                    LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+                    where  c.status > 0
+                    group by uc.user_id
+
+            )cuc on cuc.user_id = u.user_id
+            <if test="user_id!=null and user_id!=''">
+                where u.user_id = #{user_id}
+            </if>
+        )ucuc LEFT JOIN (
+            /*累计激活数量*/
+            select uc.user_id,count(*) active_card_count from vcc_card c
+            LEFT JOIN vcc_user_card uc on uc.card_id = c.id
+            where  c.status = 1
+            group by uc.user_id
+        )cuc on cuc.user_id = ucuc.user_id
+
+    </select>
+
+    <select id="selectCustomerCount" resultType="java.lang.Integer">
+        select count(*) from sys_user u
+        <if test="user_id!=null and user_id!=''">
+            where u.user_id = #{user_id}
+        </if>
+    </select>
+
+    <update id="updateCustomerRemark">
+        update sys_user set remark = #{remark} where user_id = #{user_id}
+    </update>
+
+
+
+</mapper>
